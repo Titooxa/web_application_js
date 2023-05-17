@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Сортировка списка</title>
+</head>
+<body>
+   <input type="file" id="fileInput" accept=".txt" />
+   <ul id="originalList"></ul>
+   <label>
+      <input type="checkbox" name="sortType" value="asc" /> По возрастанию
+   </label>
+   <label>
+      <input type="checkbox" name="sortType" value="desc" /> По убыванию
+   </label>
+   <label>
+      <input type="checkbox" name="sortType" value="reverse" /> Развернуть список наоборот
+   </label>
+   <button id="sortButton">Сортировать</button>
+   <ul id="sortedList"></ul>
+
+   <script>
+    //  чтениe содержимого загруженного файла
+   function readFile(file) {
+      return new Promise((resolve, reject) => {
+         const reader = new FileReader();
+         reader.onload = (event) => {
+            const content = event.target.result;
+            resolve(content);
+         };
+         reader.onerror = (event) => {
+            reject(event.target.error);
+         };
+         reader.readAsText(file);
+         });
+      }
+    // отображениe списка на странице
+      function renderList(list, elementId) {
+         const listElement = document.getElementById(elementId);
+         listElement.innerHTML = '';
+         list.forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            listElement.appendChild(li);
+         });
+      }
+    //  сортировка списка
+      function sortList(list, sortTypes) {
+         return list.sort((a, b) => {
+            for (const sortType of sortTypes) {
+               if (sortType === 'asc' && a > b) {
+                  return 1;
+                  } else if (sortType === 'desc' && a < b) {
+                  return 1;
+            }
+         }
+         return -1;
+      });
+   }
+// Обработчик события нажатия на кнопку сортировки
+      document.getElementById('sortButton').addEventListener('click', async () => {
+         const fileInput = document.getElementById('fileInput');
+         const sortTypeCheckboxes = document.getElementsByName('sortType');
+         const sortTypes = Array.from(sortTypeCheckboxes)
+            .filter((checkbox) => checkbox.checked)
+            .map((checkbox) => checkbox.value);
+      if (fileInput.files.length > 0) {
+         const file = fileInput.files[0];
+         try {
+            const content = await readFile(file);
+            const list = content.split('\n').map((line) => line.trim()).filter((line) => line !== '');
+            renderList(list, 'originalList');
+            let sortedList;
+            if (sortTypes.includes('reverse')) {
+               sortedList = list.reverse();
+             } else {
+               sortedList = sortList(list, sortTypes);
+             }
+            renderList(sortedList, 'sortedList');
+          } catch (error) {
+            console.error('Ошибка чтения файла:', error);
+          }
+      }
+ });
+   </script>
+</body>
+</html>
